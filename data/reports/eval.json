@@ -1,0 +1,58 @@
+{
+  "at": "2026-10-17T17:20:44.980Z",
+  "summary": {
+    "quote_validity": "65/65",
+    "recall": "5/5",
+    "precision": "5/5"
+  },
+  "rows": [
+    {
+      "graph": "ward",
+      "labelled": 3,
+      "found": "FMW-U1 FMW-U2 FMW-U3",
+      "missed": "-",
+      "extra": "-",
+      "clean": "n/a",
+      "injection": true,
+      "resolved_ok": true,
+      "ambiguous": true,
+      "bad_quotes": 0
+    },
+    {
+      "graph": "SL-A01",
+      "labelled": 1,
+      "found": "SL-A01-U1",
+      "missed": "-",
+      "extra": "-",
+      "clean": "n/a",
+      "injection": "n/a",
+      "resolved_ok": true,
+      "ambiguous": "n/a",
+      "bad_quotes": 0
+    },
+    {
+      "graph": "SL-C01",
+      "labelled": 0,
+      "found": "-",
+      "missed": "-",
+      "extra": "-",
+      "clean": true,
+      "injection": "n/a",
+      "resolved_ok": true,
+      "ambiguous": "n/a",
+      "bad_quotes": 0
+    },
+    {
+      "graph": "SL-D01",
+      "labelled": 1,
+      "found": "SL-D01-U1",
+      "missed": "-",
+      "extra": "-",
+      "clean": "n/a",
+      "injection": true,
+      "resolved_ok": true,
+      "ambiguous": true,
+      "bad_quotes": 0
+    }
+  ]
+}

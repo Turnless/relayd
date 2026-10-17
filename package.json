@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "graph": "tsx --env-file-if-exists=.env scripts/graph.ts",
+    "graph:cloud": "tsx --env-file=.env.cloud scripts/graph.ts",
     "eval": "tsx --env-file-if-exists=.env scripts/eval.ts"
   },
   "dependencies": {

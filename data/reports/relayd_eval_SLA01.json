@@ -1,0 +1,134 @@
+{
+  "shift": "SL-A01",
+  "findings": [
+    {
+      "rule": "blocked_by_supply",
+      "severity": "high",
+      "bed": "B12",
+      "patient": "Mrs K.O 67F",
+      "title": "B12: follow-up blocked because glucometer strips ran out",
+      "claim": "A required follow-up for B12 could not be done because the ward has no glucometer strips, and nothing in the graph shows it was restocked.",
+      "evidence": [
+        {
+          "key": "SL-A01:L15",
+          "quote": "pt sweaty, confused",
+          "text": "0300 B12 RBS 2.9mmol/L!! pt sweaty, confused. insulin inf stopped. 50ml D50 IV given 0305. HO (Dr S.) informed, said rpt RBS in 15mins + restart inf at lower rate when >5.",
+          "shift": "SL-A01"
+        },
+        {
+          "key": "SL-A01:L17",
+          "quote": "asked MMW, they have none either. pharmacy closed till 0800",
+          "text": "0330 glucometer strips finished on ward - last one used for B12. asked MMW, they have none either. pharmacy closed till 0800.",
+          "shift": "SL-A01"
+        },
+        {
+          "key": "SL-A01:L18",
+          "quote": "RBS recheck not done (no strips)",
+          "text": "0345 B12 more alert, talking. RBS recheck not done (no strips). insulin inf still off.",
+          "shift": "SL-A01"
+        },
+        {
+          "key": "SL-A01:L26",
+          "quote": "quiet night",
+          "text": "0730 handover notes: B5 fever settling. B8 2 units done, FBC am. B9 pain ok. B2 BP ok now. quiet night.",
+          "shift": "SL-A01"
+        }
+      ],
+      "path": [
+        {
+          "from": "Fact: abnormal result",
+          "rel": "ABOUT",
+          "to": "Patient B12"
+        },
+        {
+          "from": "Fact: follow-up",
+          "rel": "ABOUT",
+          "to": "Patient B12"
+        },
+        {
+          "from": "Fact: follow-up",
+          "rel": "NEEDS",
+          "to": "Supply glucometer strips"
+        },
+        {
+          "from": "Fact: stock-out",
+          "rel": "OUT_OF",
+          "to": "Supply glucometer strips"
+        }
+      ],
+      "cypher": "MATCH (x:Fact {kind:'stock_out'})-[:OUT_OF]->(s:Supply)<-[:NEEDS]-(o:Fact)\nWHERE NOT (x)<-[:RESOLVES]-(:Fact) AND NOT (o)<-[:RESOLVES]-(:Fact)\nMATCH (x)-[:CITES]->(xl:Line), (o)-[:CITES]->(ol:Line), (o)-[:ABOUT]->(p:Patient)\nOPTIONAL MATCH (p)<-[:ABOUT]-(r:Fact)-[:CITES]->(rl:Line)\n  WHERE r.kind IN ['obs_abnormal','symptom'] AND r.topic = o.topic AND r.t <= o.t\nRETURN s.name AS supply, p.key AS patient, p.label AS label, p.bed AS bed,\n       {id:x.id, quote:x.quote, key:xl.key, text:xl.text, shift:x.shift} AS stockout,\n       collect(DISTINCT {id:o.id, quote:o.quote, key:ol.key, text:ol.text, shift:o.shift}) AS blocked,\n       collect(DISTINCT {id:r.id, quote:r.quote, key:rl.key, text:rl.text, shift:r.shift}) AS cause",
+      "notes": [
+        "Left out of the handover summary (SL-A01:L26)."
+      ]
+    }
+  ],
+  "ignoredInstructions": [],
+  "unclear": [],
+  "resolved": [
+    {
+      "bed": "B9",
+      "opened": {
+        "key": "SL-A01:L08",
+        "quote": "pain 6/10",
+        "text": "B9 Mrs J.D 39F post-op day 1 (lap chole, from surg overflow). pain 6/10, IM pentazocine 30mg given 2230.",
+        "shift": "SL-A01"
+      },
+      "closed": {
+        "key": "SL-A01:L21",
+        "quote": "B9 pain 3/10",
+        "text": "0430 B9 pain 3/10.",
+        "shift": "SL-A01"
+      }
+    },
+    {
+      "bed": "B2",
+      "opened": {
+        "key": "SL-A01:L12",
+        "quote": "B2 Mrs E.E c/o headache",
+        "text": "0015 B2 Mrs E.E c/o headache, BP 150/95. HO informed by phone, said rpt BP 1hr.",
+        "shift": "SL-A01"
+      },
+      "closed": {
+        "key": "SL-A01:L13",
+        "quote": "headache better",
+        "text": "0120 B2 rpt BP 138/88, headache better.",
+        "shift": "SL-A01"
+      }
+    },
+    {
+      "bed": "B2",
+      "opened": {
+        "key": "SL-A01:L12",
+        "quote": "said rpt BP 1hr",
+        "text": "0015 B2 Mrs E.E c/o headache, BP 150/95. HO informed by phone, said rpt BP 1hr.",
+        "shift": "SL-A01"
+      },
+      "closed": {
+        "key": "SL-A01:L13",
+        "quote": "B2 rpt BP 138/88",
+        "text": "0120 B2 rpt BP 138/88, headache better.",
+        "shift": "SL-A01"
+      }
+    }
+  ],
+  "summary": {
+    "key": "SL-A01:L26",
+    "quote": "quiet night",
+    "text": "0730 handover notes: B5 fever settling. B8 2 units done, FBC am. B9 pain ok. B2 BP ok now. quiet night.",
+    "shift": "SL-A01"
+  },
+  "checked": {
+    "lines": 26,
+    "beds": [
+      "B1",
+      "B2",
+      "B3",
+      "B5",
+      "B7",
+      "B8",
+      "B9",
+      "B11",
+      "B12"
+    ]
+  }
+}

@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { claude } from "./claude";
 import type { Graph } from "falkordb";
 import { runRO } from "./falkor";
 import { scan } from "./rules";
@@ -134,7 +135,7 @@ export function verifyCitations(answer: string, lines: Map<string, string>) {
 }
 
 export async function ask(g: Graph, shift: string, question: string) {
-  const client = new Anthropic();
+  const client = claude();
   const seen = new Map<string, string>();
   const trace: ToolTrace[] = [];
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: question }];

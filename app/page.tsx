@@ -169,7 +169,7 @@ export default function Page() {
       </div>
 
       <p className="hero">
-        The night notes end with <q>{summaryText ?? "quiet night ... nil else"}</q>. Relayd reads every shift into one ward graph and
+        The night notes end with <q>{(summaryText ?? "quiet night ... nil else").replace(/\.+$/, "")}</q>. Relayd reads every shift into one ward graph and
         follows the connections between them before the morning team takes over.
       </p>
 

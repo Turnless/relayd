@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { claude } from "./claude";
 import { z } from "zod";
 import type { HandoverLog } from "./log";
 import { Extraction } from "./schema";
@@ -42,7 +43,7 @@ function render(log: HandoverLog, prior: PriorOpenItem[]) {
 }
 
 export async function extractFacts(log: HandoverLog, prior: PriorOpenItem[] = []) {
-  const client = new Anthropic();
+  const client = claude();
   const schema = z.toJSONSchema(Extraction, { target: "draft-2020-12" }) as Record<string, unknown>;
   delete schema.$schema;
   const stream = client.beta.messages.stream({

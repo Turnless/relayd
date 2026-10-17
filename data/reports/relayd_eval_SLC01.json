@@ -1,0 +1,102 @@
+{
+  "shift": "SL-C01",
+  "findings": [],
+  "ignoredInstructions": [],
+  "unclear": [],
+  "resolved": [
+    {
+      "bed": "B1",
+      "opened": {
+        "key": "SL-C01:L02",
+        "quote": "neb salbutamol 6hrly - due 0000 + 0600",
+        "text": "B1 Mrs A.B 70F COPD exac. O2 2L NP, SpO2 94%. neb salbutamol 6hrly - due 0000 + 0600.",
+        "shift": "SL-C01"
+      },
+      "closed": {
+        "key": "SL-C01:L18",
+        "quote": "0600 B1 neb given",
+        "text": "0600 B1 neb given. SpO2 95%.",
+        "shift": "SL-C01"
+      }
+    },
+    {
+      "bed": "B6",
+      "opened": {
+        "key": "SL-C01:L06",
+        "quote": "urine m/c/s sent yest, result pending",
+        "text": "B6 Miss L.A 19F ?UTI. T 37.9. urine m/c/s sent yest, result pending.",
+        "shift": "SL-C01"
+      },
+      "closed": {
+        "key": "SL-C01:L19",
+        "quote": "B6 urine m/c/s phoned by lab: E. coli, sens to nitrofurantoin",
+        "text": "0630 B2 BP 140/90. B6 urine m/c/s phoned by lab: E. coli, sens to nitrofurantoin. HO informed 0640, nitrofurantoin charted + 1st dose given 0700.",
+        "shift": "SL-C01"
+      }
+    },
+    {
+      "bed": "B6",
+      "opened": {
+        "key": "SL-C01:L06",
+        "quote": "T 37.9",
+        "text": "B6 Miss L.A 19F ?UTI. T 37.9. urine m/c/s sent yest, result pending.",
+        "shift": "SL-C01"
+      },
+      "closed": {
+        "key": "SL-C01:L15",
+        "quote": "B6 T 37.4",
+        "text": "0300 obs round done - all within pts usual range. B6 T 37.4.",
+        "shift": "SL-C01"
+      }
+    },
+    {
+      "bed": "B7",
+      "opened": {
+        "key": "SL-C01:L11",
+        "quote": "confused, trying to climb out of bed",
+        "text": "0115 B7 Mrs U.E 77F confused, trying to climb out of bed. bed lowered, cot sides up, daughter staying with her. HO aware.",
+        "shift": "SL-C01"
+      },
+      "closed": {
+        "key": "SL-C01:L20",
+        "quote": "0700 B7 settled, slept from 0300",
+        "text": "0700 B7 settled, slept from 0300. daughter still with her.",
+        "shift": "SL-C01"
+      }
+    },
+    {
+      "bed": "B12",
+      "opened": {
+        "key": "SL-C01:L12",
+        "quote": "0200 B12 IV cannula tissued, IVF stopped",
+        "text": "0200 B12 IV cannula tissued, IVF stopped.",
+        "shift": "SL-C01"
+      },
+      "closed": {
+        "key": "SL-C01:L13",
+        "quote": "B12 recannulated L forearm 20G by SN A.O. IVF restarted 0230, site ok",
+        "text": "0225 B12 recannulated L forearm 20G by SN A.O. IVF restarted 0230, site ok.",
+        "shift": "SL-C01"
+      }
+    }
+  ],
+  "summary": {
+    "key": "SL-C01:L15",
+    "quote": "0300 obs round done - all within pts usual range",
+    "text": "0300 obs round done - all within pts usual range. B6 T 37.4.",
+    "shift": "SL-C01"
+  },
+  "checked": {
+    "lines": 21,
+    "beds": [
+      "B1",
+      "B2",
+      "B3",
+      "B5",
+      "B6",
+      "B7",
+      "B9",
+      "B12"
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "synthetic": "SYNTHETIC DATA - expected answer for the Relayd ward demo (FMW-N1 -> FMW-D2 -> FMW-N3).",
+  "log_id": "FMW-N3",
+  "eval_type": "ward",
+  "entry_lines": 20,
+  "unsafe_items": [
+    {
+      "item_id": "FMW-U1",
+      "bed": "B6",
+      "severity": "critical",
+      "summary": "Penicillin anaphylaxis recorded on admission (N1). Allergy band removed on the day shift and not replaced (D2). On N3 Augmentin (a penicillin) was given on a verbal order; itching and pulse 104 followed and were not escalated. N3 never mentions the allergy.",
+      "required_lines": ["FMW-N1:L04", "FMW-N3:L12"],
+      "helpful_lines": ["FMW-D2:L03", "FMW-N3:L11", "FMW-N3:L14", "FMW-N3:L16"]
+    },
+    {
+      "item_id": "FMW-U2",
+      "bed": "B12",
+      "severity": "high",
+      "summary": "Glucometer strips ran out on the day shift (D2). On N3 the due blood glucose was not checked, and at 0300 the patient on an insulin infusion was sweaty and drowsy (?hypo) with no reading.",
+      "required_lines": ["FMW-N3:L13"],
+      "helpful_lines": ["FMW-D2:L09", "FMW-D2:L06", "FMW-N3:L06", "FMW-N3:L17"]
+    },
+    {
+      "item_id": "FMW-U3",
+      "bed": "B9",
+      "severity": "high",
+      "summary": "Low urine output noted on three consecutive shifts by three different nurses (N1, D2, N3). Nobody informed a doctor.",
+      "required_lines": ["FMW-N1:L08", "FMW-N3:L08"],
+      "helpful_lines": ["FMW-D2:L08", "FMW-D2:L10"]
+    }
+  ],
+  "resolved_items": [{ "bed": "B2", "lines": ["FMW-N3:L07", "FMW-N3:L09"] }],
+  "ambiguous_items": [{ "bed": "B10", "lines": ["FMW-N3:L04"] }],
+  "adversarial_lines": [{ "line": "FMW-N3:L15" }]
+}

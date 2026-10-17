@@ -30,14 +30,13 @@ const ev = (e: Ev): Evidence | null =>
   e && e.key && e.quote && e.text ? { key: e.key, quote: e.quote, text: e.text, shift: e.shift ?? "" } : null;
 
 const uniq = (xs: (Evidence | null)[]) => {
-  const seen = new Set<string>();
-  const out: Evidence[] = [];
+  const byKey = new Map<string, Evidence>();
   for (const x of xs) {
-    if (!x || seen.has(x.key + x.quote)) continue;
-    seen.add(x.key + x.quote);
-    out.push(x);
+    if (!x) continue;
+    const prev = byKey.get(x.key);
+    if (!prev || x.quote.length > prev.quote.length) byKey.set(x.key, x);
   }
-  return out.sort((a, b) => a.key.localeCompare(b.key, undefined, { numeric: true }));
+  return [...byKey.values()].sort((a, b) => a.key.localeCompare(b.key, undefined, { numeric: true }));
 };
 
 export const CYPHER = {
@@ -49,17 +48,21 @@ MATCH (a)-[:CITES]->(al:Line), (g)-[:CITES]->(gl:Line)
 OPTIONAL MATCH (p)<-[:ABOUT]-(s:Fact)-[:CITES]->(sl:Line)
   WHERE s.kind IN ['symptom','obs_abnormal'] AND s.t > g.t
 OPTIONAL MATCH (p)<-[:ABOUT]-(e:Fact {kind:'escalation'}) WHERE e.t > g.t
+OPTIONAL MATCH (p)<-[:ABOUT]-(bd:Fact)-[:CITES]->(bl:Line)
+  WHERE toLower(bd.quote) CONTAINS 'band' AND bd.t > a.t AND bd.t < g.t AND NOT (bd)<-[:RESOLVES]-(:Fact)
+OPTIONAL MATCH (p)<-[:ABOUT]-(so:Fact {kind:'stock_out'})-[:CITES]->(sol:Line) WHERE so.t < g.t
 RETURN p.key AS patient, p.label AS label, p.bed AS bed, c.name AS cls, ad.name AS allergen, gd.name AS drug,
        {id:a.id, quote:a.quote, key:al.key, text:al.text, shift:a.shift} AS allergy,
        collect(DISTINCT {id:g.id, quote:g.quote, key:gl.key, text:gl.text, shift:g.shift}) AS given,
        collect(DISTINCT {id:s.id, quote:s.quote, key:sl.key, text:sl.text, shift:s.shift}) AS after,
+       collect(DISTINCT {id:bd.id, quote:bd.quote, key:bl.key, text:bl.text, shift:bd.shift}) AS band,
+       collect(DISTINCT {id:so.id, quote:so.quote, key:sol.key, text:sol.text, shift:so.shift}) AS stock,
        count(DISTINCT e) AS escalations`,
 
   blockedBySupply: `
 MATCH (x:Fact {kind:'stock_out'})-[:OUT_OF]->(s:Supply)<-[:NEEDS]-(o:Fact)
 WHERE NOT (x)<-[:RESOLVES]-(:Fact) AND NOT (o)<-[:RESOLVES]-(:Fact)
-MATCH (x)-[:CITES]->(xl:Line), (o)-[:CITES]->(ol:Line)
-OPTIONAL MATCH (o)-[:ABOUT]->(p:Patient)
+MATCH (x)-[:CITES]->(xl:Line), (o)-[:CITES]->(ol:Line), (o)-[:ABOUT]->(p:Patient)
 OPTIONAL MATCH (p)<-[:ABOUT]-(r:Fact)-[:CITES]->(rl:Line)
   WHERE r.kind IN ['obs_abnormal','symptom'] AND r.topic = o.topic AND r.t <= o.t
 RETURN s.name AS supply, p.key AS patient, p.label AS label, p.bed AS bed,
@@ -72,7 +75,8 @@ MATCH (p:Patient)<-[:ABOUT]-(f1:Fact)-[:CITES]->(l1:Line)-[:IN_SHIFT]->(s1:Shift
       (p)<-[:ABOUT]-(f2:Fact)-[:CITES]->(l2:Line)-[:IN_SHIFT]->(s2:Shift)
 WHERE f1.kind IN ['symptom','obs_abnormal'] AND f2.kind IN ['symptom','obs_abnormal']
   AND f1.topic IS NOT NULL AND f1.topic = f2.topic AND s1.seq < s2.seq AND s1.author <> s2.author
-  AND NOT (f2)<-[:RESOLVES]-(:Fact)
+  AND NOT (f1)<-[:RESOLVES]-(:Fact) AND NOT (f2)<-[:RESOLVES]-(:Fact)
+  AND NOT (l1)<-[:CITES]-(:Fact {kind:'drug_given'}) AND NOT (l2)<-[:CITES]-(:Fact {kind:'drug_given'})
 OPTIONAL MATCH (p)<-[:ABOUT]-(e:Fact {kind:'escalation'}) WHERE e.topic = f1.topic AND e.t > f1.t
 WITH p, f1, l1, s1, f2, l2, s2, count(e) AS esc
 WHERE esc = 0
@@ -131,6 +135,11 @@ export async function scan(g: Graph, shift: string): Promise<ScanResult> {
     const crossShift = allergy && given.some((x) => x && x.shift !== allergy.shift);
     const notes: string[] = [];
     if (crossShift) notes.push(`The allergy was recorded on an earlier shift (${allergy!.shift}); the shift that gave the drug never mentions it.`);
+    const band = (r.band as Ev[]).map(ev).filter(Boolean) as Evidence[];
+    const stock = (r.stock as Ev[]).map(ev).filter(Boolean) as Evidence[];
+    for (const b of band) notes.push(`Allergy band: "${b.quote}" (${b.key}). No later entry says it was put back.`);
+    if (stock.length)
+      notes.push(`The usual drug ran out before the substitution: ${stock.map((s) => `"${s.quote}" (${s.key})`).join(", then ")}.`);
     if (after.length && Number(r.escalations) === 0) notes.push("Possible reaction signs after the dose; no escalation is logged after it.");
     findings.push({
       rule: "allergy_conflict",
@@ -139,7 +148,7 @@ export async function scan(g: Graph, shift: string): Promise<ScanResult> {
       patient: r.label ?? r.patient,
       title: `${r.bed}: ${r.drug} given to a patient with a ${r.allergen} allergy`,
       claim: `${r.drug} is in the ${r.cls} class, and this patient's recorded allergy is to ${r.allergen}.`,
-      evidence: uniq([allergy, ...given, ...after]),
+      evidence: uniq([allergy, ...band, ...stock, ...given, ...after]),
       path: [
         { from: `Fact: allergy (${r.allergen})`, rel: "ABOUT", to: `Patient ${r.bed}` },
         { from: `Fact: allergy (${r.allergen})`, rel: "INVOLVES", to: `Drug ${r.allergen}` },

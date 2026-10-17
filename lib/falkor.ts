@@ -1,12 +1,28 @@
-import { FalkorDB, type Graph } from "falkordb";
+import { FalkorDB, type FalkorDBOptions, type Graph } from "falkordb";
 
 let client: Promise<FalkorDB> | null = null;
 
-/** One shared connection per process. FALKORDB_URL: falkor[s]://[user[:pass]@]host:port */
+/**
+ * One shared connection per process.
+ * FalkorDB Cloud: FALKORDB_HOST, FALKORDB_PORT, FALKORDB_USERNAME, FALKORDB_PASSWORD
+ * (separate variables, so passwords with special characters need no URL-encoding).
+ * Otherwise FALKORDB_URL: falkor://[user[:pass]@]host:port (default falkor://localhost:16379).
+ */
+export function connectionOptions(): FalkorDBOptions {
+  const host = process.env.FALKORDB_HOST?.trim();
+  if (host) {
+    return {
+      socket: { host, port: Number(process.env.FALKORDB_PORT || 6379), connectTimeout: 10_000 },
+      username: process.env.FALKORDB_USERNAME?.trim() || undefined,
+      password: process.env.FALKORDB_PASSWORD || undefined,
+    };
+  }
+  return { url: process.env.FALKORDB_URL || "falkor://localhost:16379", socket: { connectTimeout: 10_000 } };
+}
+
 export function db(): Promise<FalkorDB> {
   if (!client) {
-    const url = process.env.FALKORDB_URL || "falkor://localhost:16379";
-    client = FalkorDB.connect({ url, socket: { connectTimeout: 10_000 } } as never).catch((err) => {
+    client = FalkorDB.connect(connectionOptions()).catch((err) => {
       client = null;
       throw err;
     });
