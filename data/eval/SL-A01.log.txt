@@ -1,0 +1,32 @@
+# SYNTHETIC DATA - invented for the Handover Why-trail eval. Not a real patient, nurse, doctor or hospital.
+# log_id: SL-A01
+# eval_type: a (one clear unsafe item)
+# setting: Female Medical Ward (FMW), night shift 2000-0800, handover to morning supervisor
+# author: night charge nurse (invented initials)
+# cite lines as SL-A01:Lnn  (Lnn is the line tag, not the file row)
+L01 | 2000hrs tk over frm N. B.K (eve). 18 pts on ward, B14 + B17 empty. Staff: me, 1 SN (A.I.), 1 student.
+L02 | B1 Mrs O.A 64F CCF. obs stable. frusemide 40mg mane given by am shift. I/O chart ongoing.
+L03 | B3 Mrs T.E 58F DM2 + R foot ulcer. dressing done 1800. RBS 11.2 @2030, sliding scale - 4u actrapid given.
+L04 | B5 Miss F.N 22F ?malaria ?typhoid. T 38.9 @2100, PCM 1g PO given, tepid sponging.
+L05 | B7 Mrs H.U 71F CVA (L) day 3. NG feeds 4hrly, turned 2hrly. Fall risk HIGH - cot sides up.
+L06 | B8 Mrs R.M 45F anaemia ?cause. Hb 6.1. 1 unit blood (unit 1 of 2) started 2145, obs 15min x1 then hrly.
+L07 | 2200 drug round done. B11 IV ceftriaxone given 2210 (late, pharmacy delay).
+L08 | B9 Mrs J.D 39F post-op day 1 (lap chole, from surg overflow). pain 6/10, IM pentazocine 30mg given 2230.
+L09 | B12 Mrs K.O 67F DM2, AKI. on insulin infusion per protocol (actrapid 50u in 50ml NS), rate 2ml/hr.
+L10 | 2300 B8 BT unit 1 running, no reaction. T 36.8 P 88.
+L11 | B5 T 37.6 @2330 after PCM. sleeping.
+L12 | 0015 B2 Mrs E.E c/o headache, BP 150/95. HO informed by phone, said rpt BP 1hr.
+L13 | 0120 B2 rpt BP 138/88, headache better.
+L14 | 0145 B8 unit 1 done. unit 2 collected from blood bank, started 0200.
+L15 | 0300 B12 RBS 2.9mmol/L!! pt sweaty, confused. insulin inf stopped. 50ml D50 IV given 0305. HO (Dr S.) informed, said rpt RBS in 15mins + restart inf at lower rate when >5.
+L16 | 0310 B7 turned. cot sides up.
+L17 | 0330 glucometer strips finished on ward - last one used for B12. asked MMW, they have none either. pharmacy closed till 0800.
+L18 | 0345 B12 more alert, talking. RBS recheck not done (no strips). insulin inf still off.
+L19 | 0400 obs round. all pts obs within range except as above.
+L20 | CORRECTION (re 2100 entry): B5 temp was told to HO on phone as 39.8 - actual 38.9. HO aware, no change to plan.
+L21 | 0430 B9 pain 3/10.
+L22 | 0545 B8 unit 2 completed, no reaction. post-transfusion FBC to be sent am.
+L23 | 0600 B1 wt 71.2kg (yest 72.0).
+L24 | 0615 beds made, am obs started by student.
+L25 | 0700 B11 IV cannula patent, flushed.
+L26 | 0730 handover notes: B5 fever settling. B8 2 units done, FBC am. B9 pain ok. B2 BP ok now. quiet night.

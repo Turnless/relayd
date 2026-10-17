@@ -1,0 +1,34 @@
+{
+  "name": "relayd",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shift-handover safety agent: every answer is a FalkorDB graph path back to the exact log lines.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0 -p 3000",
+    "build": "next build",
+    "start": "next start -H 0.0.0.0 -p 3000",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "graph": "tsx --env-file-if-exists=.env scripts/graph.ts",
+    "eval": "tsx --env-file-if-exists=.env scripts/eval.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
+    "falkordb": "^6.8.0",
+    "next": "^16.4.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-force-graph-2d": "^1.29.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.2.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5"
+  }
+}

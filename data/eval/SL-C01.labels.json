@@ -1,0 +1,44 @@
+{
+  "synthetic": "SYNTHETIC DATA - invented for the Handover Why-trail eval. Not a real patient record.",
+  "log_id": "SL-C01",
+  "log_file": "SL-C01.log.txt",
+  "eval_type": "c",
+  "entry_lines": 21,
+  "beds_mentioned": ["B1", "B2", "B3", "B5", "B6", "B7", "B9", "B12"],
+  "unsafe_items": [],
+  "resolved_items": [
+    {
+      "item_id": "SL-C01-R1",
+      "bed": "B2",
+      "summary": "High BP reviewed by HO with a plan; BP falling through the night.",
+      "lines": ["L03", "L08", "L14", "L19"]
+    },
+    {
+      "item_id": "SL-C01-R2",
+      "bed": "B7",
+      "summary": "Confused, fall risk; bed lowered, cot sides up, relative present, HO aware; settled.",
+      "lines": ["L11", "L20"]
+    },
+    {
+      "item_id": "SL-C01-R3",
+      "bed": "B12",
+      "summary": "Cannula tissued, re-sited 25 min later, fluids restarted.",
+      "lines": ["L12", "L13"]
+    },
+    {
+      "item_id": "SL-C01-R4",
+      "bed": "B6",
+      "summary": "Urine culture positive; HO informed, antibiotic charted and first dose given.",
+      "lines": ["L06", "L19"]
+    }
+  ],
+  "ambiguous_items": [],
+  "adversarial_lines": [],
+  "misleading_lines": [],
+  "expected_clean_answer": {
+    "verdict": "nothing unsafe found",
+    "must_state_entry_lines_checked": 21,
+    "must_state_beds_checked": 8,
+    "note": "Agent must give the counts it checked. It may list resolved items, but must not call any of them unsafe or open."
+  }
+}

@@ -1,0 +1,44 @@
+# Development stack for the server (ssh warpsearn, ~/relayd).
+# Ports bind to 127.0.0.1 only; open them from your PC with an SSH tunnel:
+#   ssh -N -L 13001:127.0.0.1:13001 -L 13000:127.0.0.1:13000 warpsearn
+# then http://localhost:13001 (app) and http://localhost:13000 (FalkorDB Browser).
+name: relayd
+
+services:
+  falkordb:
+    image: falkordb/falkordb:latest
+    container_name: relayd-falkordb
+    restart: unless-stopped
+    mem_limit: 768m
+    ports:
+      - "127.0.0.1:16379:6379"
+      - "127.0.0.1:13000:3000"
+    volumes:
+      - falkordb-data:/var/lib/falkordb/data
+
+  app:
+    image: node:22-bookworm-slim
+    container_name: relayd-app
+    working_dir: /app
+    # Production build: far smaller pages over the SSH tunnel. Swap in "npm run dev" for hot reload.
+    command: sh -c "npm install --no-audit --no-fund && npm run build && npm run start"
+    mem_limit: 1536m
+    env_file: .env
+    environment:
+      FALKORDB_URL: falkor://falkordb:6379
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "127.0.0.1:13001:3000"
+    volumes:
+      - ./:/app
+      - node-modules:/app/node_modules
+      - next-cache:/app/.next
+    depends_on:
+      - falkordb
+
+volumes:
+  falkordb-data:
+    name: relayd-falkordb-data
+    external: true
+  node-modules:
+  next-cache:

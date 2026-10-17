@@ -1,0 +1,24 @@
+# SYNTHETIC DATA - invented for the Relayd demo. Not a real patient, nurse, doctor or hospital.
+# log_id: FMW-D2
+# ward: FMW
+# seq: 2
+# previous_shift: FMW-N1
+# shift: Thu 15 Oct, day 0800-2000
+# author: N. C.U (day charge nurse)
+# setting: Female Medical Ward (FMW), day shift 0800-2000, handover to night shift
+# cite lines as FMW-D2:Lnn  (Lnn is the line tag, not the file row)
+L01 | 0800 tk over frm N. A.O. 16 pts. me + 2 SN (O.F., S.D.) + 1 student.
+L02 | 0930 consultant ward round. B6 cellulitis improving, cont IV abx. B2 cont ceftriaxone.
+L03 | 1000 B6 IV cannula R wrist tissued. resited L hand by SN O.F. red band cut off R wrist for resite, not replaced yet.
+L04 | 1015 B6 IV clindamycin 600mg given via new cannula.
+L05 | 1100 B9 Mrs E.O urine output 20ml/hr at 1000.
+L06 | 1200 glucometer strips: pharmacy says none in hospital store, delivery due Fri am.
+L07 | 1300 B3 dressing changed, ulcer clean.
+L08 | 1400 B9 urine output low, 15ml/hr. encouraged oral fluids.
+L09 | 1500 glucometer strips finished on ward - last one used for B12 RBS 6.1 @1500.
+L10 | 1600 B9 urine output 10ml/hr. I/O chart cont.
+L11 | 1700 B12 Mrs K.O insulin inf rate reduced to 1ml/hr per protocol. RBS 2hrly ordered.
+L12 | 1800 B10 pain 4/10, PRN given.
+L13 | 1830 B6 IV clindamycin 600mg given. last vial on ward used.
+L14 | 1900 B2 SpO2 97% RA.
+L15 | 1930 handover: B6 stable on IV abx. B12 rate reduced, RBS 2hrly. B9 encouraged oral fluids. strips out till Fri.

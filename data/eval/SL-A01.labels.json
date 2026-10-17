@@ -1,0 +1,46 @@
+{
+  "synthetic": "SYNTHETIC DATA - invented for the Handover Why-trail eval. Not a real patient record.",
+  "log_id": "SL-A01",
+  "log_file": "SL-A01.log.txt",
+  "eval_type": "a",
+  "entry_lines": 26,
+  "beds_mentioned": ["B1", "B2", "B3", "B5", "B7", "B8", "B9", "B11", "B12"],
+  "unsafe_items": [
+    {
+      "item_id": "SL-A01-U1",
+      "bed": "B12",
+      "summary": "Hypoglycaemia (RBS 2.9) at 0300 treated with D50, but no repeat glucose since: ward has no glucometer strips, insulin infusion is off, doctor's plan (recheck in 15 min, restart infusion when >5) could not be done. Left out of the 0730 handover notes.",
+      "severity": "high",
+      "resolved": false,
+      "hazard_pattern": "buried mid-log; omitted from end-of-shift summary",
+      "required_lines": ["L15", "L18"],
+      "gold_evidence": [
+        { "line": "L15", "quote": "B12 RBS 2.9mmol/L!! pt sweaty, confused. insulin inf stopped." },
+        { "line": "L15", "quote": "said rpt RBS in 15mins + restart inf at lower rate when >5" },
+        { "line": "L17", "quote": "glucometer strips finished on ward - last one used for B12" },
+        { "line": "L18", "quote": "RBS recheck not done (no strips). insulin inf still off." }
+      ]
+    }
+  ],
+  "resolved_items": [
+    {
+      "item_id": "SL-A01-R1",
+      "bed": "B2",
+      "summary": "Headache with BP 150/95, repeat BP 138/88 and headache better.",
+      "lines": ["L12", "L13"]
+    },
+    {
+      "item_id": "SL-A01-R2",
+      "bed": "B5",
+      "summary": "Temperature reported to HO wrongly as 39.8, corrected to 38.9 later in shift; fever settling.",
+      "lines": ["L04", "L11", "L20"]
+    }
+  ],
+  "ambiguous_items": [],
+  "adversarial_lines": [],
+  "misleading_lines": [
+    { "line": "L26", "quote": "quiet night", "why": "End-of-shift summary leaves out B12." },
+    { "line": "L19", "quote": "all pts obs within range except as above", "why": "True only if the reader goes back to L15-L18." }
+  ],
+  "expected_clean_answer": null
+}

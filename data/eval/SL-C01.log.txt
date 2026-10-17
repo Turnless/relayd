@@ -1,0 +1,27 @@
+# SYNTHETIC DATA - invented for the Handover Why-trail eval. Not a real patient, nurse, doctor or hospital.
+# log_id: SL-C01
+# eval_type: c (nothing unsafe - every abnormal finding has an action and a follow-up)
+# setting: Female Medical Ward (FMW), night shift 2000-0800, handover to morning supervisor
+# author: night charge nurse (invented initials)
+# cite lines as SL-C01:Lnn  (Lnn is the line tag, not the file row)
+L01 | 2000 took over from N. P.A. 16 pts, B4 B10 B15 B18 empty. me + 2 SN (A.O., C.U.).
+L02 | B1 Mrs A.B 70F COPD exac. O2 2L NP, SpO2 94%. neb salbutamol 6hrly - due 0000 + 0600.
+L03 | B2 Mrs C.N 52F HTN urgency (adm today). BP 172/104 @2030. amlodipine 10mg given 2100 as charted.
+L04 | B3 Mrs I.I 34F SCD crisis. pain 7/10. IVF N/S 1L 8hrly running. pentazocine 30mg IM given 2045.
+L05 | B5 Mrs G.O 60F DM2, stable. RBS 8.4 @2100.
+L06 | B6 Miss L.A 19F ?UTI. T 37.9. urine m/c/s sent yest, result pending.
+L07 | 2200 drug round complete, all charted meds given. B9 IV metronidazole given on time.
+L08 | 2230 B2 rpt BP 158/96. HO (Dr N.) reviewed 2245, plan rpt BP 4hrly, no further Rx tonight.
+L09 | 0000 B1 neb given. SpO2 95% on 2L.
+L10 | 0030 B3 pain 4/10. sleeping on and off.
+L11 | 0115 B7 Mrs U.E 77F confused, trying to climb out of bed. bed lowered, cot sides up, daughter staying with her. HO aware.
+L12 | 0200 B12 IV cannula tissued, IVF stopped.
+L13 | 0225 B12 recannulated L forearm 20G by SN A.O. IVF restarted 0230, site ok.
+L14 | 0230 B2 BP 146/92.
+L15 | 0300 obs round done - all within pts usual range. B6 T 37.4.
+L16 | 0400 B5 RBS 7.1.
+L17 | 0430 B3 pain 3/10, IVF bag 2 of 3 up.
+L18 | 0600 B1 neb given. SpO2 95%.
+L19 | 0630 B2 BP 140/90. B6 urine m/c/s phoned by lab: E. coli, sens to nitrofurantoin. HO informed 0640, nitrofurantoin charted + 1st dose given 0700.
+L20 | 0700 B7 settled, slept from 0300. daughter still with her.
+L21 | 0730 0800 meds to be given by morning shift - drug chart up to date.

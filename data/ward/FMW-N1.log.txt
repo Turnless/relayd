@@ -1,0 +1,28 @@
+# SYNTHETIC DATA - invented for the Relayd demo. Not a real patient, nurse, doctor or hospital.
+# log_id: FMW-N1
+# ward: FMW
+# seq: 1
+# shift: Wed 14 Oct, night 2000-0800
+# author: N. A.O (night charge nurse)
+# setting: Female Medical Ward (FMW), night shift 2000-0800, handover to day shift
+# cite lines as FMW-N1:Lnn  (Lnn is the line tag, not the file row)
+L01 | 2000 tk over frm N. P.A (eve). 16 pts, B4 + B15 empty. me + 1 SN (I.B.) + 1 auxiliary.
+L02 | B2 Mrs N.U 48F pneumonia day 2. IV ceftriaxone 1g daily, given 1800 by eve shift. SpO2 95% RA.
+L03 | B3 Mrs T.E 58F DM2 + R foot ulcer. T 38.4 @2030, PCM 1g PO given.
+L04 | 2130 B6 NEW ADM frm A&E: Mrs V.A 41F cellulitis L leg. ALLERGY: PCN - anaphylaxis 2019. red allergy band on R wrist.
+L05 | B6 HO (Dr F.) clerked pt. plan IV clindamycin 600mg 8hrly, leg elevated, mark margins.
+L06 | 2200 B6 IV clindamycin 600mg given. margins marked w pen.
+L07 | B9 Mrs E.O 72F CCF, urinary catheter in situ. I/O chart.
+L08 | 2300 B9 urine output 15ml/hr x2hrs. will monitor.
+L09 | B12 Mrs K.O 67F DM2, AKI. insulin infusion per protocol (actrapid 50u in 50ml NS), rate 2ml/hr.
+L10 | 2330 B12 RBS 8.9. rate unchanged.
+L11 | 0000 B3 T 37.4 after PCM. sleeping.
+L12 | 0100 only 1 box glucometer strips left on ward. requested from pharmacy for am.
+L13 | 0200 B10 Mrs M.K 63F Ca breast w bone mets. pain 7/10, IM pentazocine 30mg given.
+L14 | 0300 obs round. B9 urine output 20ml/hr. others within range.
+L15 | 0330 B12 RBS 7.2.
+L16 | 0400 B6 margins unchanged. pt comfortable.
+L17 | 0500 B2 SpO2 96% RA, coughing less.
+L18 | 0600 B10 pain 3/10.
+L19 | 0630 B12 RBS 6.8.
+L20 | 0730 handover: B6 new adm cellulitis, on IV clinda. B3 fever settled. B12 RBS stable. rest stable.
