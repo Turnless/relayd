@@ -1,0 +1,11 @@
+[
+  { "id": "hero", "text": "Every morning, a nurse takes over the ward from the night shift. And very often, the handover note ends like this: quiet night, nil else." },
+  { "id": "open", "text": "Relayd reads every shift's notes, not just last night's, and shows what they left out. Let's open the demo ward." },
+  { "id": "graph", "text": "Each row is a patient, and each column is a shift. Every card is a real line from the notes, quoted word for word. Bed six is marked act now." },
+  { "id": "why", "text": "Here's why. On Wednesday night, a nurse wrote that this patient is allergic to penicillin. On Thursday night, she was given Augmentin, which is a penicillin. The two notes share no words, and they sit two shifts apart. The graph joins them through the penicillin family." },
+  { "id": "patient", "text": "Click the patient, and you see everything written about her across all three shifts, with the lines behind the warning highlighted." },
+  { "id": "meds", "text": "Click the Augmentin note, and Medicines opens right on the allergy clash." },
+  { "id": "leftout", "text": "The seven thirty summary didn't mention any of these three patients. Relayd lists them, so nothing slips through." },
+  { "id": "how", "text": "Under the hood, Claude reads the notes into a FalkorDB graph, every quote is checked against the original line, and each warning is a Cypher query you can inspect." },
+  { "id": "close", "text": "Relayd. See what last night's notes left out. All the patients and notes in this demo are made up." }
+]

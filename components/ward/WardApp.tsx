@@ -167,7 +167,21 @@ export default function WardApp() {
       </div>
 
       <div className="wd-rail" style={{ width: open ? 264 : 76 }}>
-        <nav aria-label="Sections" className="wd-nav" style={{ width: open ? 264 : 76 }} onMouseEnter={() => setPeek(true)} onMouseLeave={() => setPeek(false)} onFocus={() => setPeek(true)} onBlur={() => setPeek(false)}>
+        <nav
+          aria-label="Sections"
+          className="wd-nav"
+          style={{ width: open ? 264 : 76 }}
+          onMouseEnter={() => setPeek(true)}
+          onMouseLeave={() => setPeek(false)}
+          // Keyboard focus opens the menu; it closes only when focus leaves the menu entirely,
+          // so moving between menu items (or clicking a second one) never collapses it mid-click.
+          onFocus={(e) => {
+            if ((e.target as HTMLElement).matches(":focus-visible")) setPeek(true);
+          }}
+          onBlur={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null) && !e.currentTarget.matches(":hover")) setPeek(false);
+          }}
+        >
           {STARS.map(([x, y], i) => (
             <span key={i} className="wd-star" style={{ left: x, top: `${y}%`, width: i % 4 === 0 ? 3 : 2, height: i % 4 === 0 ? 3 : 2, animationDuration: `${(4.5 + (i % 5) * 1.3).toFixed(1)}s`, animationDelay: `${((i * 0.7) % 5).toFixed(1)}s`, display: open || x < 70 ? "block" : "none" }} />
           ))}
