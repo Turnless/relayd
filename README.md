@@ -11,8 +11,8 @@ At 07:30 a ward supervisor takes over from the night shift with a long, messy lo
 | | |
 |---|---|
 | Live app | https://getrelayd.vercel.app (landing) and https://getrelayd.vercel.app/ward (the ward screen); no sign-in, no key needed |
-| Demo video | *add link* |
-| Blog post | *add link* |
+| Demo video | https://youtu.be/jwpTEIPt_zo |
+| Blog post | https://relayd.hashnode.dev/relayd |
 | Graph | FalkorDB Cloud (ap-south-1), one isolated graph per ward and per eval log; app on Vercel in the same region |
 | Speed | full safety scan of the ward graph: about 20 ms of database time on the live site (191 nodes, 308 relationships) |
 | Cost | reading 6 logs into the graph with Claude Opus 5.5: about $0.69 in total (19,920 input / 30,587 output tokens, about 37 s per log). The judge path makes no LLM calls. |
