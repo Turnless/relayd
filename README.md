@@ -259,7 +259,7 @@ Write a log in `data/ward/` with a `# seq:` and `# previous_shift:` header and `
 
 ## AI use disclosure
 
-Built with Claude Code (Claude Opus 5.5) as a coding assistant: it wrote most of the code to my design and ran the tests and evals; commits carry a `Co-Authored-By` line. Claude Opus 5.5 is also part of the product (fact extraction and the question-answering agent). I chose the problem, the graph model and the safety rules, wrote the planning notes and labels, and checked each result against the source logs.
+Built with Claude Code (Claude Opus 5.5) as a coding assistant: it wrote most of the code to my design and ran the tests and evals. Claude Opus 5.5 is also part of the product (fact extraction and the question-answering agent). I chose the problem, the graph model and the safety rules, wrote the planning notes and labels, and checked each result against the source logs.
 
 ## Licence
 
