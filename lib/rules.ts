@@ -7,7 +7,7 @@ import { runRO } from "./falkor";
  * behind it and the path the query walked.
  */
 
-export type Evidence = { key: string; quote: string; text: string; shift: string };
+export type Evidence = { key: string; quote: string; text: string; shift: string; kind?: string; drug?: string | null };
 export type PathEdge = { from: string; rel: string; to: string };
 export type Severity = "critical" | "high" | "medium";
 
@@ -22,12 +22,14 @@ export type Finding = {
   path: PathEdge[];
   cypher: string;
   notes: string[];
+  /** A node several evidence lines share in the graph (drug family, supply), for the ward board. */
+  shared?: { label: string; tone: "red" | "amber"; keys: string[] };
 };
 
-type Ev = { id: string | null; quote: string | null; key: string | null; text: string | null; shift: string | null };
+type Ev = { id: string | null; kind?: string | null; drug?: string | null; quote: string | null; key: string | null; text: string | null; shift: string | null };
 
 const ev = (e: Ev): Evidence | null =>
-  e && e.key && e.quote && e.text ? { key: e.key, quote: e.quote, text: e.text, shift: e.shift ?? "" } : null;
+  e && e.key && e.quote && e.text ? { key: e.key, quote: e.quote, text: e.text, shift: e.shift ?? "", kind: e.kind ?? "", drug: e.drug ?? null } : null;
 
 const uniq = (xs: (Evidence | null)[]) => {
   const byKey = new Map<string, Evidence>();
@@ -52,11 +54,11 @@ OPTIONAL MATCH (p)<-[:ABOUT]-(bd:Fact)-[:CITES]->(bl:Line)
   WHERE toLower(bd.quote) CONTAINS 'band' AND bd.t > a.t AND bd.t < g.t AND NOT (bd)<-[:RESOLVES]-(:Fact)
 OPTIONAL MATCH (p)<-[:ABOUT]-(so:Fact {kind:'stock_out'})-[:CITES]->(sol:Line) WHERE so.t < g.t
 RETURN p.key AS patient, p.label AS label, p.bed AS bed, c.name AS cls, ad.name AS allergen, gd.name AS drug,
-       {id:a.id, quote:a.quote, key:al.key, text:al.text, shift:a.shift} AS allergy,
-       collect(DISTINCT {id:g.id, quote:g.quote, key:gl.key, text:gl.text, shift:g.shift}) AS given,
-       collect(DISTINCT {id:s.id, quote:s.quote, key:sl.key, text:sl.text, shift:s.shift}) AS after,
-       collect(DISTINCT {id:bd.id, quote:bd.quote, key:bl.key, text:bl.text, shift:bd.shift}) AS band,
-       collect(DISTINCT {id:so.id, quote:so.quote, key:sol.key, text:sol.text, shift:so.shift}) AS stock,
+       {id:a.id, kind:a.kind, drug:a.drug, quote:a.quote, key:al.key, text:al.text, shift:a.shift} AS allergy,
+       collect(DISTINCT {id:g.id, kind:g.kind, drug:g.drug, quote:g.quote, key:gl.key, text:gl.text, shift:g.shift}) AS given,
+       collect(DISTINCT {id:s.id, kind:s.kind, drug:s.drug, quote:s.quote, key:sl.key, text:sl.text, shift:s.shift}) AS after,
+       collect(DISTINCT {id:bd.id, kind:bd.kind, drug:bd.drug, quote:bd.quote, key:bl.key, text:bl.text, shift:bd.shift}) AS band,
+       collect(DISTINCT {id:so.id, kind:so.kind, drug:so.drug, quote:so.quote, key:sol.key, text:sol.text, shift:so.shift}) AS stock,
        count(DISTINCT e) AS escalations`,
 
   blockedBySupply: `
@@ -66,9 +68,9 @@ MATCH (x)-[:CITES]->(xl:Line), (o)-[:CITES]->(ol:Line), (o)-[:ABOUT]->(p:Patient
 OPTIONAL MATCH (p)<-[:ABOUT]-(r:Fact)-[:CITES]->(rl:Line)
   WHERE r.kind IN ['obs_abnormal','symptom'] AND r.topic = o.topic AND r.t <= o.t
 RETURN s.name AS supply, p.key AS patient, p.label AS label, p.bed AS bed,
-       {id:x.id, quote:x.quote, key:xl.key, text:xl.text, shift:x.shift} AS stockout,
-       collect(DISTINCT {id:o.id, quote:o.quote, key:ol.key, text:ol.text, shift:o.shift}) AS blocked,
-       collect(DISTINCT {id:r.id, quote:r.quote, key:rl.key, text:rl.text, shift:r.shift}) AS cause`,
+       {id:x.id, kind:x.kind, drug:x.drug, quote:x.quote, key:xl.key, text:xl.text, shift:x.shift} AS stockout,
+       collect(DISTINCT {id:o.id, kind:o.kind, drug:o.drug, quote:o.quote, key:ol.key, text:ol.text, shift:o.shift}) AS blocked,
+       collect(DISTINCT {id:r.id, kind:r.kind, drug:r.drug, quote:r.quote, key:rl.key, text:rl.text, shift:r.shift}) AS cause`,
 
   recurringConcern: `
 MATCH (p:Patient)<-[:ABOUT]-(f1:Fact)-[:CITES]->(l1:Line)-[:IN_SHIFT]->(s1:Shift),
@@ -82,28 +84,28 @@ WITH p, f1, l1, s1, f2, l2, s2, count(e) AS esc
 WHERE esc = 0
 RETURN p.key AS patient, p.label AS label, p.bed AS bed, f1.topic AS topic,
        collect(DISTINCT s1.author) + collect(DISTINCT s2.author) AS authors,
-       collect(DISTINCT {id:f1.id, quote:f1.quote, key:l1.key, text:l1.text, shift:s1.id}) +
-       collect(DISTINCT {id:f2.id, quote:f2.quote, key:l2.key, text:l2.text, shift:s2.id}) AS seen`,
+       collect(DISTINCT {id:f1.id, kind:f1.kind, drug:f1.drug, quote:f1.quote, key:l1.key, text:l1.text, shift:s1.id}) +
+       collect(DISTINCT {id:f2.id, kind:f2.kind, drug:f2.drug, quote:f2.quote, key:l2.key, text:l2.text, shift:s2.id}) AS seen`,
 
   instructions: `
 MATCH (f:Fact {kind:'instruction_to_ai'})-[:CITES]->(l:Line)
-RETURN {id:f.id, quote:f.quote, key:l.key, text:l.text, shift:f.shift} AS e ORDER BY f.t`,
+RETURN {id:f.id, kind:f.kind, drug:f.drug, quote:f.quote, key:l.key, text:l.text, shift:f.shift} AS e ORDER BY f.t`,
 
   ambiguous: `
 MATCH (f:Fact {kind:'ambiguous_term'})-[:CITES]->(l:Line)
-RETURN {id:f.id, quote:f.quote, key:l.key, text:l.text, shift:f.shift} AS e, f.bed AS bed ORDER BY f.t`,
+RETURN {id:f.id, kind:f.kind, drug:f.drug, quote:f.quote, key:l.key, text:l.text, shift:f.shift} AS e, f.bed AS bed ORDER BY f.t`,
 
   lastSummary: `
 MATCH (f:Fact {kind:'summary_claim'})-[:CITES]->(l:Line)-[:IN_SHIFT]->(s:Shift {id:$shift})
 OPTIONAL MATCH (f)-[:MENTIONS]->(b:Bed)
 WITH f, l, collect(b.id) AS beds ORDER BY f.t DESC LIMIT 1
-RETURN {id:f.id, quote:f.quote, key:l.key, text:l.text, shift:f.shift} AS e, beds`,
+RETURN {id:f.id, kind:f.kind, drug:f.drug, quote:f.quote, key:l.key, text:l.text, shift:f.shift} AS e, beds`,
 
   resolved: `
 MATCH (r:Fact)-[:RESOLVES]->(f:Fact), (r)-[:CITES]->(rl:Line), (f)-[:CITES]->(fl:Line)
 WHERE f.shift = $shift OR r.shift = $shift
-RETURN f.bed AS bed, {id:f.id, quote:f.quote, key:fl.key, text:fl.text, shift:f.shift} AS opened,
-       {id:r.id, quote:r.quote, key:rl.key, text:rl.text, shift:r.shift} AS closed ORDER BY f.t`,
+RETURN f.bed AS bed, {id:f.id, kind:f.kind, drug:f.drug, quote:f.quote, key:fl.key, text:fl.text, shift:f.shift} AS opened,
+       {id:r.id, kind:r.kind, drug:r.drug, quote:r.quote, key:rl.key, text:rl.text, shift:r.shift} AS closed ORDER BY f.t`,
 
   coverage: `
 MATCH (l:Line)-[:IN_SHIFT]->(s:Shift {id:$shift})
@@ -158,6 +160,7 @@ export async function scan(g: Graph, shift: string): Promise<ScanResult> {
         { from: `Fact: given (${r.drug})`, rel: "ABOUT", to: `Patient ${r.bed}` },
       ],
       cypher: CYPHER.allergyConflict.trim(),
+      shared: { label: `${r.cls} family`, tone: "red", keys: [allergy?.key, ...given.map((x) => x?.key)].filter(Boolean) as string[] },
       notes,
     });
   }
@@ -178,6 +181,7 @@ export async function scan(g: Graph, shift: string): Promise<ScanResult> {
         { from: "Fact: stock-out", rel: "OUT_OF", to: `Supply ${r.supply}` },
       ],
       cypher: CYPHER.blockedBySupply.trim(),
+      shared: { label: r.supply, tone: "amber", keys: [ev(r.stockout)?.key, ...(r.blocked as Ev[]).map((x) => ev(x)?.key)].filter(Boolean) as string[] },
       notes: [],
     });
   }
@@ -209,7 +213,10 @@ export async function scan(g: Graph, shift: string): Promise<ScanResult> {
   for (const f of findings) {
     const k = `${f.rule}|${f.patient}|${f.title}`;
     const prev = merged.get(k);
-    if (prev) prev.evidence = uniq([...prev.evidence, ...f.evidence]);
+    if (prev) {
+      prev.evidence = uniq([...prev.evidence, ...f.evidence]);
+      if (prev.shared && f.shared) prev.shared.keys = [...new Set([...prev.shared.keys, ...f.shared.keys])];
+    }
     else merged.set(k, f);
   }
   const list = [...merged.values()].sort((a, b) => SEV_ORDER[a.severity] - SEV_ORDER[b.severity]);

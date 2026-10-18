@@ -1,398 +1,206 @@
-"use client";
+import Link from "next/link";
+import Logo from "@/components/Logo";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import GraphView from "@/components/GraphView";
-
-type Evidence = { key: string; quote: string; text: string; shift: string };
-type Finding = {
-  rule: string;
-  severity: "critical" | "high" | "medium";
-  bed: string | null;
-  patient: string | null;
-  title: string;
-  claim: string;
-  evidence: Evidence[];
-  path: { from: string; rel: string; to: string }[];
-  cypher: string;
-  notes: string[];
-};
-type Report = {
-  shift: string;
-  findings: Finding[];
-  ignoredInstructions: Evidence[];
-  unclear: (Evidence & { bed: string | null })[];
-  resolved: { bed: string | null; opened: Evidence; closed: Evidence }[];
-  summary: Evidence | null;
-  checked: { lines: number; beds: string[] };
-};
-type ScanResponse = {
-  source: "live" | "cached";
-  ms: number;
-  stats: { nodes: { label: string; n: number }[]; relationships: number } | null;
-  report: Report;
-  error?: string;
-};
-type Line = { key: string; tag: string; n: number; text: string };
-type LogEntry = { logId: string; header: Record<string, string>; lines: Line[] };
-type Catalog = { id: string; label: string; graph: string; lastShift: string; logs: LogEntry[] }[];
-type AskResponse = {
-  answer: string;
-  citations: { key: string; quote: string; valid: boolean; reason?: string }[];
-  trace: { tool: string; input: unknown; cypher: string; rows: number; ms: number }[];
-  model: string;
-  ms: number;
-  usage: { input: number; output: number };
-  error?: string;
-};
-
-const SUGGESTED = [
-  "What is unsafe at this handover, and why?",
-  "Why is bed 6 flagged? Show me the lines.",
-  "Which problems have carried over from earlier shifts?",
-  "Who has noted bed 9's urine output, and was anyone told?",
-];
-
-function Highlight({ text, quote }: { text: string; quote: string }) {
-  const i = text.indexOf(quote);
-  if (i < 0) return <>{text}</>;
-  return (
-    <>
-      {text.slice(0, i)}
-      <mark>{quote}</mark>
-      {text.slice(i + quote.length)}
-    </>
-  );
-}
-
-function renderAnswer(answer: string, onKey: (k: string) => void) {
-  const parts = answer.split(/(\[[A-Za-z0-9-]+:L\d{2,3}\s+"[^"]+"\]|\[citation removed:[^\]]+\])/g);
-  return parts.map((p, i) => {
-    const m = p.match(/^\[([A-Za-z0-9-]+:L\d{2,3})\s+"([^"]+)"\]$/);
-    if (m)
-      return (
-        <span key={i}>
-          {" "}
-          <button className="key" onClick={() => onKey(m[1])} title={m[2]}>
-            {m[1]}
-          </button>
-        </span>
-      );
-    if (p.startsWith("[citation removed")) return <span key={i} className="cite-bad">{p}</span>;
-    return <span key={i}>{p}</span>;
-  });
-}
-
-export default function Page() {
-  const [catalog, setCatalog] = useState<Catalog>([]);
-  const [gid, setGid] = useState("ward");
-  const [scan, setScan] = useState<ScanResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState<string | null>(null);
-  const [focus, setFocus] = useState<string | null>(null);
-  const [openPath, setOpenPath] = useState<number | null>(0);
-  const [q, setQ] = useState(SUGGESTED[0]);
-  const [asking, setAsking] = useState(false);
-  const [ans, setAns] = useState<AskResponse | null>(null);
-
-  useEffect(() => {
-    fetch("/api/logs")
-      .then((r) => r.json())
-      .then((c: Catalog) => setCatalog(c));
-  }, []);
-
-  const current = catalog.find((c) => c.id === gid);
-
-  const runScan = useCallback(() => {
-    setLoading(true);
-    setScan(null);
-    fetch(`/api/scan?g=${encodeURIComponent(gid)}`)
-      .then((r) => r.json())
-      .then((d) => setScan(d))
-      .finally(() => setLoading(false));
-  }, [gid]);
-
-  useEffect(() => {
-    if (current) {
-      setTab(current.lastShift);
-      setAns(null);
-      setOpenPath(0);
-      runScan();
-    }
-  }, [current, runScan]);
-
-  const cited = useMemo(() => {
-    const s = new Set<string>();
-    scan?.report?.findings.forEach((f) => f.evidence.forEach((e) => s.add(e.key)));
-    ans?.citations.forEach((c) => c.valid && s.add(c.key));
-    return s;
-  }, [scan, ans]);
-
-  const jump = (key: string) => {
-    const shift = key.split(":")[0];
-    setTab(shift);
-    setFocus(key);
-    setTimeout(() => document.getElementById(`line-${key}`)?.scrollIntoView({ block: "center", behavior: "smooth" }), 50);
+const stars = Array.from({ length: 40 }, (_, i) => {
+  const size = i % 6 === 0 ? 3 : 2;
+  return {
+    left: `${(i * 37 + 11) % 100}%`,
+    top: `${((i * 53 + 7) % 92) * 15}px`,
+    width: size,
+    height: size,
+    animationDuration: `${(4 + (i % 6) * 1.2).toFixed(1)}s`,
+    animationDelay: `${((i * 0.43) % 6).toFixed(2)}s`,
   };
+});
 
-  const askNow = async () => {
-    setAsking(true);
-    setAns(null);
-    try {
-      const r = await fetch("/api/ask", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ g: gid, question: q }),
-      });
-      setAns(await r.json());
-    } finally {
-      setAsking(false);
-    }
-  };
-
-  const r = scan?.report;
-  const log = current?.logs.find((l) => l.logId === tab) ?? current?.logs[current.logs.length - 1];
-  const summaryText = r?.summary?.quote;
-
+export default function Landing() {
   return (
-    <main className="wrap">
-      <div className="top">
-        <div className="brand">
-          Relay<span>d</span>
-        </div>
-        <div className="tag">Shift handover check. Every warning is a graph path back to the exact line in the notes.</div>
-      </div>
-      <div className="chips">
-        <span className="chip">FalkorDB</span>
-        <span className="chip">Graph Hacks 2026 · Track 01 + 02</span>
-        <span className="chip warn">SYNTHETIC DATA: not real patients</span>
-        <span className="chip">Not a medical device</span>
+    <div className="lp">
+      <div className="lp-sky" aria-hidden="true">
+        {stars.map((s, i) => (
+          <span key={i} className="lp-star" style={s} />
+        ))}
+        <div className="lp-glow" />
       </div>
 
-      <p className="hero">
-        The night notes end with <q>{(summaryText ?? "quiet night ... nil else").replace(/\.+$/, "")}</q>. Relayd reads every shift into one ward graph and
-        follows the connections between them before the morning team takes over.
-      </p>
+      <header className="lp-wrap lp-header">
+        <Link href="/" className="lp-brand">
+          <Logo size={30} />
+          Relayd
+        </Link>
+        <nav aria-label="Page" className="lp-nav">
+          <a href="#story">The problem</a>
+          <a href="#how">How it works</a>
+          <a href="https://github.com/Turnless/relayd">Source code</a>
+        </nav>
+        <Link href="/ward" className="lp-btn small">
+          Open the demo ward
+        </Link>
+      </header>
 
-      <div className="bar">
-        <select value={gid} onChange={(e) => setGid(e.target.value)} aria-label="Choose graph">
-          {catalog.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.label}
-            </option>
-          ))}
-        </select>
-        <button className="btn ghost" onClick={runScan} disabled={loading}>
-          {loading ? "Checking..." : "Re-run handover check"}
-        </button>
-        {scan && !scan.error && (
-          <span className="meta">
-            {scan.source === "live" ? "Live from FalkorDB" : "Cached result (database unreachable)"} · {scan.ms} ms
-            {scan.stats && ` · ${scan.stats.nodes.reduce((a, b) => a + Number(b.n), 0)} nodes, ${scan.stats.relationships} relationships`}
-          </span>
-        )}
-      </div>
-
-      <div className="grid">
-        <section className="stack">
-          <div className="panel">
-            <h2>
-              Handover check after {r?.shift ?? "..."}
-              {r && <span className="meta"> · {r.findings.length} warning{r.findings.length === 1 ? "" : "s"}</span>}
-            </h2>
-            {scan?.error && <p className="cite-bad">{scan.error}</p>}
-            {loading && <p className="empty">Running the safety rules over the graph...</p>}
-            {r && r.findings.length === 0 && (
-              <p className="ok">
-                Nothing unsafe found. Checked {r.checked.lines} entry lines, {r.checked.beds.length} beds ({r.checked.beds.join(", ")}).
-              </p>
-            )}
-            <div className="stack">
-              {r?.findings.map((f, i) => (
-                <article key={i} className={`finding ${f.severity}`}>
-                  <div>
-                    <span className={`sev ${f.severity}`}>{f.severity}</span>
-                    <span className="ftitle">{f.title}</span>
-                  </div>
-                  <p className="claim">{f.claim}</p>
-                  {f.notes.length > 0 && (
-                    <ul className="notes">
-                      {f.notes.map((n, j) => (
-                        <li key={j}>{n}</li>
-                      ))}
-                    </ul>
-                  )}
-                  <ul className="ev">
-                    {f.evidence.map((e) => (
-                      <li key={e.key + e.quote}>
-                        <button className="key" onClick={() => jump(e.key)}>
-                          {e.key}
-                        </button>
-                        <span>
-                          <Highlight text={e.text} quote={e.quote} />
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <details open={openPath === i} onToggle={(ev) => (ev.currentTarget as HTMLDetailsElement).open && setOpenPath(i)}>
-                    <summary>Graph path and Cypher behind this warning</summary>
-                    <div className="path">
-                      {f.path.map((p, j) => (
-                        <span key={j}>
-                          <span className="node">{p.from}</span> <span className="rel">-[{p.rel}]-&gt;</span> <span className="node">{p.to}</span>
-                        </span>
-                      ))}
-                    </div>
-                    <pre>{f.cypher}</pre>
-                    {openPath === i && f.bed && <GraphView g={gid} bed={f.bed} />}
-                  </details>
-                </article>
-              ))}
+      <main>
+        <section id="top" className="lp-wrap lp-hero">
+          <div style={{ flex: "1 1 460px", minWidth: 0, display: "flex", flexDirection: "column", gap: 22 }}>
+            <h1>See what last night&apos;s notes left out.</h1>
+            <p className="lp-lede">
+              Relayd reads every shift&apos;s nursing notes into one ward graph, then shows the morning team what is unsafe, with the exact
+              lines behind each warning.
+            </p>
+            <div className="lp-row" style={{ paddingTop: 6 }}>
+              <Link href="/ward" className="lp-btn">
+                Open the demo ward
+              </Link>
+              <a href="#how" className="lp-btn ghost">
+                See how it works
+              </a>
             </div>
-
-            {r && (
-              <>
-                <h3>Ignored instructions</h3>
-                {r.ignoredInstructions.length === 0 ? (
-                  <p className="empty">None found in the notes.</p>
-                ) : (
-                  <ul className="ev">
-                    {r.ignoredInstructions.map((e) => (
-                      <li key={e.key}>
-                        <button className="key" onClick={() => jump(e.key)}>
-                          {e.key}
-                        </button>
-                        <span>
-                          <Highlight text={e.text} quote={e.quote} /> <span className="muted">· treated as log text, not followed</span>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <h3>Unclear, check the chart</h3>
-                {r.unclear.length === 0 ? (
-                  <p className="empty">Nothing ambiguous recorded.</p>
-                ) : (
-                  <ul className="ev">
-                    {r.unclear.map((e) => (
-                      <li key={e.key + e.quote}>
-                        <button className="key" onClick={() => jump(e.key)}>
-                          {e.key}
-                        </button>
-                        <span>
-                          <Highlight text={e.text} quote={e.quote} />
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <h3>Resolved during the shift</h3>
-                {r.resolved.length === 0 ? (
-                  <p className="empty">No resolved items linked.</p>
-                ) : (
-                  <ul className="ev">
-                    {r.resolved.map((x) => (
-                      <li key={x.opened.key + x.closed.key}>
-                        <button className="key" onClick={() => jump(x.opened.key)}>
-                          {x.opened.key}
-                        </button>
-                        <span>
-                          {x.opened.quote} <span className="muted">resolved at</span>{" "}
-                          <button className="key" onClick={() => jump(x.closed.key)}>
-                            {x.closed.key}
-                          </button>{" "}
-                          {x.closed.quote}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <p className="meta">
-                  Checked {r.checked.lines} entry lines in {r.shift}; beds with recorded facts: {r.checked.beds.join(", ") || "none"}.
-                </p>
-              </>
-            )}
+            <p className="lp-small">Demo ward with made-up patients and notes.</p>
           </div>
 
-          <div className="panel">
-            <h2>Ask the ward graph</h2>
-            <p className="small muted">
-              Claude picks read-only graph tools; every citation in the answer is checked against the line it names, and any quote that
-              is not verbatim is removed.
+          <figure className="lp-card" aria-label="Example: the 07:30 handover and what Relayd found">
+            <figcaption className="lp-small">Thursday night, written at 07:30</figcaption>
+            <blockquote className="lp-quote">
+              &ldquo;quiet night. B2 resited. B10 pain controlled. <span className="lp-nil">nil else.</span>&rdquo;
+            </blockquote>
+            <div className="lp-found">
+              <span />
+              Relayd read the last three shifts and found
+            </div>
+            <ul className="lp-alerts">
+              <li className="lp-alert act" style={{ animationDelay: "1800ms" }}>
+                <span className="lp-bed">6</span>
+                <span>
+                  <strong>Augmentin given. Penicillin allergy written on Wednesday.</strong>
+                  <span className="lvl">Act now</span>
+                </span>
+              </li>
+              <li className="lp-alert check" style={{ animationDelay: "1960ms" }}>
+                <span className="lp-bed">12</span>
+                <span>
+                  <strong>No blood sugar reading for 16½ hours on an insulin drip.</strong>
+                  <span className="lvl">Check this shift</span>
+                </span>
+              </li>
+              <li className="lp-alert check" style={{ animationDelay: "2120ms" }}>
+                <span className="lp-bed">9</span>
+                <span>
+                  <strong>Low urine output on three shifts. No doctor told.</strong>
+                  <span className="lvl">Check this shift</span>
+                </span>
+              </li>
+            </ul>
+          </figure>
+        </section>
+
+        <section id="story" className="lp-wrap lp-story">
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 760 }}>
+            <h2 className="lp-h2">Three nurses wrote it down. No single note shows the danger.</h2>
+            <p className="lp-sub">
+              Each shift read only its own notes. The allergy was on Wednesday&apos;s page, the missing allergy band on Thursday&apos;s, and
+              the swapped antibiotic on Thursday night&apos;s.
             </p>
-            <div className="chips" style={{ marginBottom: 8 }}>
-              {SUGGESTED.map((s) => (
-                <button key={s} className="chip" onClick={() => setQ(s)}>
-                  {s}
-                </button>
-              ))}
-            </div>
-            <div className="bar">
-              <input type="text" value={q} onChange={(e) => setQ(e.target.value)} style={{ flex: 1, minWidth: 220 }} aria-label="Question" />
-              <button className="btn" onClick={askNow} disabled={asking || !q.trim()}>
-                {asking ? "Thinking..." : "Ask"}
-              </button>
-            </div>
-            {ans?.error && <p className="cite-bad">{ans.error}</p>}
-            {ans && !ans.error && (
-              <>
-                <div className="answer">{renderAnswer(ans.answer, jump)}</div>
-                <p className="meta">
-                  {ans.citations.filter((c) => c.valid).length} citations verified
-                  {ans.citations.some((c) => !c.valid) && `, ${ans.citations.filter((c) => !c.valid).length} removed`} · {ans.model} ·{" "}
-                  {(ans.ms / 1000).toFixed(1)} s · {ans.usage.input + ans.usage.output} tokens
-                </p>
-                <details>
-                  <summary>Graph tools the agent called ({ans.trace.length})</summary>
-                  <ul className="trace">
-                    {ans.trace.map((t, i) => (
-                      <li key={i}>
-                        <code>{t.tool}</code>({JSON.stringify(t.input)}) · {t.rows} rows · {t.ms} ms
-                        <pre>{t.cypher}</pre>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              </>
-            )}
+          </div>
+          <ol className="lp-notes">
+            <li className="lp-note">
+              <span className="who">Wednesday night, N. A.O</span>
+              <span className="txt">
+                &ldquo;<mark>ALLERGY: PCN - anaphylaxis 2019.</mark> red allergy band on R wrist.&rdquo;
+              </span>
+              <span className="at">21:30, line 4</span>
+            </li>
+            <li className="lp-note">
+              <span className="who">Thursday day, N. C.U</span>
+              <span className="txt">
+                &ldquo;<mark>red band cut off R wrist for resite, not replaced yet.</mark>&rdquo;
+              </span>
+              <span className="at">10:00, line 3</span>
+            </li>
+            <li className="lp-note">
+              <span className="who">Thursday night, N. B.K</span>
+              <span className="txt">
+                &ldquo;<mark>B6 Augmentin 1.2g IV given.</mark>&rdquo;
+              </span>
+              <span className="at">02:35, line 12</span>
+            </li>
+          </ol>
+          <p style={{ margin: 0, fontSize: 19, maxWidth: "62ch" }}>
+            Augmentin is a penicillin. Relayd joins the three notes through the patient and the drug family, then flags bed 6 before the
+            morning ward round.
+          </p>
+        </section>
+
+        <div className="lp-sunrise" aria-hidden="true">
+          <div className="lp-sun" />
+          <div className="lp-horizon" />
+        </div>
+
+        <section id="how" className="lp-wrap lp-how lp-light">
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 760 }}>
+            <h2 className="lp-h2">How Relayd gets the morning team ready</h2>
+            <p className="lp-sub">Nothing to fill in. Nurses keep writing notes the way they already do.</p>
+          </div>
+          <ol className="lp-steps">
+            <li>
+              <span className="n">Step 1</span>
+              <h3>Reads each shift&apos;s notes</h3>
+              <p>Claude turns the shorthand into facts: allergies, drugs given, symptoms, stock-outs, handover summaries.</p>
+            </li>
+            <li>
+              <span className="n">Step 2</span>
+              <h3>Checks every quote</h3>
+              <p>A fact is kept only if its quote matches the note word for word. Nothing is reworded or made up.</p>
+            </li>
+            <li>
+              <span className="n">Step 3</span>
+              <h3>Joins the shifts in one graph</h3>
+              <p>Patients, notes, drugs, drug families and supplies are connected in FalkorDB, shift after shift.</p>
+            </li>
+            <li className="last">
+              <span className="n">Step 4</span>
+              <h3>Shows the line behind each warning</h3>
+              <p>The morning nurse sees who needs attention and taps through to the exact note it came from.</p>
+            </li>
+          </ol>
+        </section>
+
+        <section className="lp-wrap lp-proof lp-light">
+          <h2>Tested on a demo ward</h2>
+          <div className="body">
+            <p className="big">
+              On the demo ward and three test logs, Relayd found <strong>all 5</strong> planted problems with <strong>no false alarms</strong>,
+              and <strong>all 65</strong> quotes matched the notes word for word. A full safety check takes about{" "}
+              <strong>20 milliseconds</strong> on FalkorDB Cloud.
+            </p>
+            <p className="fine">
+              The test set is small and made up, and no nurse has reviewed it yet. A note asking the software to leave a patient out is shown,
+              not followed. Relayd points to what the notes say; nurses and doctors decide.
+            </p>
           </div>
         </section>
 
-        <aside className="panel">
-          <h2>Shift notes in the graph</h2>
-          <div className="tabs">
-            {current?.logs.map((l) => (
-              <button key={l.logId} className={l.logId === log?.logId ? "on" : ""} onClick={() => setTab(l.logId)}>
-                {l.logId}
-              </button>
-            ))}
+        <section className="lp-wrap lp-cta">
+          <div className="lp-cta-box">
+            <div style={{ flex: "1 1 420px", display: "flex", flexDirection: "column", gap: 10 }}>
+              <h2>Start the shift with the full picture.</h2>
+              <p>Open the demo ward and click any patient to see every note written about them.</p>
+            </div>
+            <div className="lp-row">
+              <Link href="/ward" className="lp-btn">
+                Open the demo ward
+              </Link>
+              <a href="https://github.com/Turnless/relayd" className="lp-btn ghost">
+                Read the source code
+              </a>
+            </div>
           </div>
-          {log && (
-            <>
-              <div className="loghead">
-                {log.header.shift ?? log.header.setting} · written by {log.header.author ?? "unknown"}
-              </div>
-              <div className="log">
-                {log.lines.map((l) => (
-                  <div
-                    key={l.key}
-                    id={`line-${l.key}`}
-                    className={`${cited.has(l.key) ? "cited" : ""} ${focus === l.key ? "focus" : ""}`}
-                  >
-                    <span className="tagc">{l.tag}</span>
-                    <span>{l.text}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="meta">Highlighted lines are cited by a warning or an answer.</p>
-            </>
-          )}
-        </aside>
-      </div>
+        </section>
+      </main>
 
-      <footer>
-        All patients, staff and notes are invented. Relayd points to risks and the lines behind them; nurses and doctors decide. Source:{" "}
-        <a href="https://github.com/Turnless/relayd">github.com/Turnless/relayd</a>
+      <footer className="lp-wrap lp-footer">
+        <span>Built for Graph Hacks 2026 on FalkorDB, with Claude reading the notes.</span>
+        <span>All patients and notes on this site are made up.</span>
+        <span>Relayd is not a medical device.</span>
       </footer>
-    </main>
+    </div>
   );
 }

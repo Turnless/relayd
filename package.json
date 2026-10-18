@@ -13,15 +13,16 @@
     "test": "vitest run",
     "graph": "tsx --env-file-if-exists=.env scripts/graph.ts",
     "graph:cloud": "tsx --env-file=.env.cloud scripts/graph.ts",
-    "eval": "tsx --env-file-if-exists=.env scripts/eval.ts"
+    "eval": "tsx --env-file-if-exists=.env scripts/eval.ts",
+    "board": "tsx --env-file-if-exists=.env scripts/board.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
+    "@xyflow/react": "^12.12.0",
     "falkordb": "^6.8.0",
     "next": "^16.4.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-force-graph-2d": "^1.29.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {

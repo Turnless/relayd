@@ -10,7 +10,7 @@ At 07:30 a ward supervisor takes over from the night shift with a long, messy lo
 
 | | |
 |---|---|
-| Live app | https://getrelayd.vercel.app (no sign-in, no key needed) |
+| Live app | https://getrelayd.vercel.app (landing) and https://getrelayd.vercel.app/ward (the ward screen); no sign-in, no key needed |
 | Demo video | *add link* |
 | Blog post | *add link* |
 | Graph | FalkorDB Cloud (ap-south-1), one isolated graph per ward and per eval log; app on Vercel in the same region |
@@ -23,14 +23,12 @@ At 07:30 a ward supervisor takes over from the night shift with a long, messy lo
 
 Five minutes, nothing to install.
 
-1. Open https://getrelayd.vercel.app. The **Ward FMW: 3 linked shifts** graph is selected, and the handover check after night shift `FMW-N3` runs straight away on FalkorDB.
-2. Read the **critical** bed 6 warning. Its evidence spans three shifts:
-   `FMW-N1:L04` penicillin anaphylaxis written at admission → `FMW-D2:L03` allergy band cut off and not put back → `FMW-D2:L13` last clindamycin vial used → `FMW-N3:L11-L12` Augmentin (a penicillin) given on a verbal order → `FMW-N3:L14, L16` itching, pulse 104 → `FMW-N3:L20` summary says "nil else". Night 3's notes never mention the allergy.
-3. Open **Graph path and Cypher behind this warning**: the path, the exact query, and a live graph of everything connected to bed 6.
-4. Click any line key (for example `FMW-N1:L04`). The right-hand panel jumps to that shift and highlights the line.
-5. Look at **Ignored instructions**: `FMW-N3:L15` is a line planted in the notes telling an AI to leave bed 6 out. It is listed as data and bed 6 is still flagged.
-6. Switch the dropdown to **SL-C01**: a clean log, which returns "Nothing unsafe found" with the counts it checked.
-7. Ask a question in **Ask the ward graph** (for example "Who has noted bed 9's urine output, and was anyone told?"). Claude chooses read-only graph tools; every citation in the answer is checked against the line it names, and any quote that is not verbatim is removed.
+1. Open https://getrelayd.vercel.app and press **Open the demo ward** (or go straight to https://getrelayd.vercel.app/ward).
+2. **Needs attention** is a live React Flow graph built from FalkorDB: one row per patient with a warning, one column per shift, each card a verbatim line from the notes. Bed 6 (red, "Act now") connects through a **Penicillin family** node: the allergy written on Wednesday night and the Augmentin given on Thursday night share no words and sit two shifts apart.
+3. Hover a card to light its connections. Click **bed 6** to open "Everything written about bed 6": every line about her across three shifts, with the lines behind the warning highlighted.
+4. Go back and click **B6 Augmentin 1.2g IV given**: Medicines opens with that row marked "Allergy clash: this patient is allergic to penicillin". Any other card opens the shift notes at its exact line.
+5. **Left out of handover** shows the 07:30 summary ("quiet night ... nil else.") and the three patients it misses. The planted line asking the AI to skip bed 6 is in Thursday night's notes, line 15; bed 6 is still flagged.
+6. **Ask** answers free-form questions with citations checked word for word against the notes. **How it works** shows the Cypher behind the top warning and lets you switch to the test logs (SL-C01 is a clean log: nothing flagged).
 
 ## The problem
 
